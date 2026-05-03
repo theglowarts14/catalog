@@ -7,12 +7,12 @@
 <link rel="stylesheet" href="styles.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 <div id="app">
   <header id="toolbar">
     <div class="brand">Catalog Creator</div>
+
     <div class="group">
       <label class="btn">
         <input type="file" id="addImage" accept="image/*" multiple hidden />
@@ -24,14 +24,10 @@
       </label>
       <button class="btn" id="addText">+ Text</button>
       <button class="btn" id="addCard">+ Card</button>
+      <button class="btn" id="openBulk">Bulk Import…</button>
     </div>
+
     <div class="group">
-      <label>Orientation
-        <select id="orientation">
-          <option value="portrait">Portrait</option>
-          <option value="landscape">Landscape</option>
-        </select>
-      </label>
       <label>Size
         <select id="pageSize">
           <option value="A4">A4</option>
@@ -40,16 +36,43 @@
           <option value="A5">A5</option>
         </select>
       </label>
+      <label>Orient.
+        <select id="orientation">
+          <option value="portrait">Portrait</option>
+          <option value="landscape">Landscape</option>
+        </select>
+      </label>
       <button class="btn" id="addPage">+ Page</button>
-      <button class="btn" id="autoFit">Auto-Fit Selected</button>
-      <button class="btn" id="autoArrange">Auto-Arrange Page</button>
+      <div class="dropdown">
+        <button class="btn" id="templatesBtn">Templates ▾</button>
+        <div class="dropdown-menu" id="templatesMenu">
+          <button data-tpl="cover">Cover Page</button>
+          <button data-tpl="2x3">Grid 2 × 3</button>
+          <button data-tpl="3x4">Grid 3 × 4</button>
+          <button data-tpl="4x5">Grid 4 × 5</button>
+          <button data-tpl="magazine">Magazine</button>
+        </div>
+      </div>
+      <button class="btn" id="headerFooterBtn">Header/Footer…</button>
     </div>
+
     <div class="group">
+      <label class="check"><input type="checkbox" id="snapEnabled" checked /> Snap</label>
+      <label>Grid <input type="number" id="snapSize" value="8" min="1" max="100" style="width:48px" /></label>
+      <label class="check"><input type="checkbox" id="guidesEnabled" checked /> Guides</label>
+      <button class="btn" id="autoFit">Auto-Fit</button>
+      <button class="btn" id="autoArrange">Auto-Arrange</button>
+    </div>
+
+    <div class="group">
+      <button class="btn" id="undoBtn" title="Ctrl+Z">↶ Undo</button>
+      <button class="btn" id="redoBtn" title="Ctrl+Shift+Z">↷ Redo</button>
       <button class="btn" id="saveJson">Save</button>
       <label class="btn">
         <input type="file" id="loadJson" accept="application/json" hidden />
         Load
       </label>
+      <button class="btn" id="clearAll" title="Clear everything">Clear</button>
       <button class="btn primary" id="exportPdf">Export PDF</button>
     </div>
   </header>
@@ -58,6 +81,7 @@
     <aside id="sidebar">
       <h3>Pages</h3>
       <div id="pageList"></div>
+
       <h3>Properties</h3>
       <div id="props">
         <div class="prop-empty">Select an item to edit its properties.</div>
@@ -66,9 +90,65 @@
 
     <section id="canvasArea">
       <div id="pages"></div>
+      <div id="marquee" hidden></div>
+      <div id="guides"></div>
     </section>
   </main>
+
+  <div class="status-bar" id="statusBar">Ready</div>
 </div>
+
+<!-- Bulk import modal -->
+<div class="modal" id="bulkModal" hidden>
+  <div class="modal-content">
+    <h2>Bulk Import</h2>
+    <p>Drop a folder of images and (optionally) a CSV mapping filenames to names &amp; numbers.</p>
+    <div class="prop-row">
+      <label>Image folder (selects all images inside)</label>
+      <input type="file" id="bulkImages" multiple webkitdirectory directory />
+    </div>
+    <div class="prop-row">
+      <label>CSV (columns: <code>filename,name,number,price</code> — header optional)</label>
+      <input type="file" id="bulkCsv" accept=".csv,text/csv" />
+    </div>
+    <div class="prop-row">
+      <label class="check"><input type="checkbox" id="bulkAutoArrange" checked /> Auto-arrange new items into grid pages</label>
+    </div>
+    <div class="prop-row">
+      <label>Items per page</label>
+      <input type="number" id="bulkPerPage" value="6" min="1" max="40" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="bulkCancel">Cancel</button>
+      <button class="btn primary" id="bulkRun">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- Header/Footer modal -->
+<div class="modal" id="hfModal" hidden>
+  <div class="modal-content">
+    <h2>Header / Footer (current page)</h2>
+    <p>Use <code>{page}</code> and <code>{total}</code> in the text — they're replaced on render and export.</p>
+    <div class="prop-row">
+      <label class="check"><input type="checkbox" id="hfHeaderShow" /> Show header</label>
+      <input type="text" id="hfHeaderText" placeholder="Header text" />
+    </div>
+    <div class="prop-row">
+      <label class="check"><input type="checkbox" id="hfFooterShow" /> Show footer</label>
+      <input type="text" id="hfFooterText" placeholder="Footer text — e.g. {page} / {total}" />
+    </div>
+    <div class="prop-row">
+      <label class="check"><input type="checkbox" id="hfApplyAll" /> Apply to all pages</label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="hfCancel">Cancel</button>
+      <button class="btn primary" id="hfSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<div id="exportOverlay" hidden>Generating PDF…</div>
 
 <script src="app.js"></script>
 </body>

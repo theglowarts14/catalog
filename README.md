@@ -1,53 +1,82 @@
 # Catalog Creator
 
 A self-contained, browser-based catalog creator with free-flow layout, image/PDF
-import, multi-page support, landscape/portrait toggle, autofit, and PDF export.
+import, multi-page support, landscape/portrait toggle, autofit, and **vector**
+PDF export.
 
 ## Features
 
-- **Free-flow layout** — drag and resize items anywhere on the page.
+### Content
 - **Images** — add multiple JPG/PNG/WebP files. Each gets a caption with name + number.
 - **PDF import** — every page of an uploaded PDF becomes its own catalog item (rendered via pdf.js).
-- **Text blocks** — editable text with font size / color / alignment.
-- **Pages** — A4 / Letter / A3 / A5, portrait or landscape, multiple pages.
-- **Auto-fit** — preserves an image's natural aspect ratio inside its frame.
-- **Auto-arrange** — grid the page's items based on count and aspect ratio.
-- **Save / Load** — exports the whole catalog as a JSON file (images embedded as data URLs).
-- **Export PDF** — flatten every page to a single PDF using html2canvas + jsPDF.
+- **Text blocks** — editable text with font family / weight / size / color / alignment.
+- **Bulk import** — pick a folder of images plus an optional CSV
+  (`filename,name,number,price` — header optional). Auto-paginates into a chosen
+  grid size.
+
+### Layout
+- **Free-flow** — drag and resize items anywhere; 8 resize handles per item.
+- **Multi-select** — Shift-click items, or marquee-drag on empty page area.
+  Group drag, delete, duplicate.
+- **Snap-to-grid** — toggleable, configurable grid size.
+- **Alignment guides** — pink lines appear when edges/centers align with other items.
+- **Auto-Fit** — preserves an image's natural aspect ratio inside its frame.
+- **Auto-Arrange** — grids the page's items based on count and aspect ratio.
+- **Templates** — Cover page, 2×3 / 3×4 / 4×5 grids, magazine layout.
+- **Header / Footer** — per-page or apply-to-all, with `{page}` and `{total}`
+  placeholders for page numbering.
+
+### Per-item styling
+- Background color, border (width + color), corner radius, drop shadow.
+- Caption position: bottom, top, overlay, or hidden.
+
+### Pages
+- A4 / Letter / A3 / A5; portrait / landscape per page.
+- Reorder, duplicate, delete via the sidebar.
+
+### State management
+- **Undo / Redo** — `Ctrl+Z` / `Ctrl+Shift+Z`. ~80 step history.
+- **Auto-save** — every change is debounced and saved to IndexedDB. The session
+  is restored automatically on next load.
+- **Save / Load JSON** — exports the whole catalog as a JSON file (images
+  embedded as data URLs, fully round-tripping).
+- **Clear** — wipes everything (with confirm).
+
+### Export
+- **Vector PDF** — renders text as real PDF text and images as embedded
+  bitmaps via jsPDF. Smaller files, sharper text, selectable copy.
+- Headers, footers, page numbering, borders, backgrounds, captions all rendered
+  natively in the PDF.
 
 ## Run
 
 It's just static files — no build step, no server required.
-
-Open `index.html` in a modern browser. To avoid `file://` quirks with PDF.js,
-run a tiny local server:
 
 ```bash
 python3 -m http.server 8000
 # then open http://localhost:8000
 ```
 
-## Usage
+(Opening via `file://` mostly works but PDF.js prefers `http://`.)
 
-1. Click **+ Image(s)** or **+ PDF** to import files. Each image / PDF page is
-   added as a draggable item on the active page.
-2. Click an item to select it; drag to move, drag a corner/edge to resize.
-3. Edit name and number in the right-hand properties panel.
-4. **Auto-Fit Selected** restores the image's aspect ratio.
-5. **Auto-Arrange Page** lays all items out in a grid.
-6. **+ Page** adds another page in the chosen orientation/size.
-7. **Export PDF** generates `catalog.pdf` with every page.
+## Keyboard shortcuts
 
-## Keyboard
-
-- `Delete` / `Backspace` removes the selected item (when not editing text).
+| Shortcut | Action |
+|---|---|
+| `Ctrl+Z` / `Ctrl+Shift+Z` | Undo / redo |
+| `Ctrl+C` / `Ctrl+V` | Copy / paste selected items |
+| `Ctrl+D` | Duplicate selection |
+| `Ctrl+A` | Select all on page |
+| `Delete` / `Backspace` | Delete selection |
+| `Arrow keys` | Nudge selection (1px; `Shift` = 10px) |
+| `Shift+click` | Toggle item in selection |
+| `Drag empty area` | Marquee-select |
 
 ## Stack
 
-Vanilla HTML / CSS / JS. Loads three libraries from CDN:
+Vanilla HTML / CSS / JS. Loads from CDN:
 
 - [pdf.js](https://mozilla.github.io/pdf.js/) for PDF rendering
-- [jsPDF](https://github.com/parallax/jsPDF) for PDF output
-- [html2canvas](https://html2canvas.hertzen.com/) to rasterize each page
+- [jsPDF](https://github.com/parallax/jsPDF) for vector PDF output
 
 No data leaves the browser.
