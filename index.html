@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Catalog Creator</title>
+<link rel="stylesheet" href="styles.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+<div id="app">
+  <header id="toolbar">
+    <div class="brand">Catalog Creator</div>
+    <div class="group">
+      <label class="btn">
+        <input type="file" id="addImage" accept="image/*" multiple hidden />
+        + Image(s)
+      </label>
+      <label class="btn">
+        <input type="file" id="addPdf" accept="application/pdf" hidden />
+        + PDF
+      </label>
+      <button class="btn" id="addText">+ Text</button>
+      <button class="btn" id="addCard">+ Card</button>
+    </div>
+    <div class="group">
+      <label>Orientation
+        <select id="orientation">
+          <option value="portrait">Portrait</option>
+          <option value="landscape">Landscape</option>
+        </select>
+      </label>
+      <label>Size
+        <select id="pageSize">
+          <option value="A4">A4</option>
+          <option value="Letter">Letter</option>
+          <option value="A3">A3</option>
+          <option value="A5">A5</option>
+        </select>
+      </label>
+      <button class="btn" id="addPage">+ Page</button>
+      <button class="btn" id="autoFit">Auto-Fit Selected</button>
+      <button class="btn" id="autoArrange">Auto-Arrange Page</button>
+    </div>
+    <div class="group">
+      <button class="btn" id="saveJson">Save</button>
+      <label class="btn">
+        <input type="file" id="loadJson" accept="application/json" hidden />
+        Load
+      </label>
+      <button class="btn primary" id="exportPdf">Export PDF</button>
+    </div>
+  </header>
+
+  <main id="workspace">
+    <aside id="sidebar">
+      <h3>Pages</h3>
+      <div id="pageList"></div>
+      <h3>Properties</h3>
+      <div id="props">
+        <div class="prop-empty">Select an item to edit its properties.</div>
+      </div>
+    </aside>
+
+    <section id="canvasArea">
+      <div id="pages"></div>
+    </section>
+  </main>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
